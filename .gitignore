@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual environments
+venv/
+.env
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Playwright / Selenium
+playwright/.cache/
+
+# Secrets
+.env
+secrets.json
+
+# OS
+.DS_Store
