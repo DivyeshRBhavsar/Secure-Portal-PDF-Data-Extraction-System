@@ -15,6 +15,10 @@ playwright/.cache/
 # Secrets
 .env
 secrets.json
+session.json
 
 # OS
 .DS_Store
+
+#output files 
+output/
