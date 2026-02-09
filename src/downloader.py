@@ -10,7 +10,8 @@ import csv
 from datetime import datetime
 from playwright.sync_api import sync_playwright
 import re
-from pdf_extractor import extract_policy_data, append_to_csv1
+from src.pdf_extractor import extract_policy_data, append_to_csv1
+from src.utils import sanitize_filename
 
 # ---- Configuration ----
 SESSION_FILE = "session.json"
@@ -36,11 +37,7 @@ def append_to_csv(row: dict):
             writer.writeheader()
         writer.writerow(row)
 
-def sanitize_filename(text: str) -> str:
-    text = text.strip()
-    text = re.sub(r"[^\w\s-]", "", text)  # remove special chars
-    text = re.sub(r"\s+", "_", text)      # spaces → underscores
-    return text
+
 
 
 def download_pdfs(headless=False):
