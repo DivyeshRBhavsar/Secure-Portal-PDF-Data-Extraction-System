@@ -92,7 +92,7 @@ def download_pdfs(headless=False):
         
 
         while True:
-            print(f"📄 Processing page {page_number}")
+            print(f"Processing page {page_number}")
 
             i = 0
             while True:
@@ -111,7 +111,7 @@ def download_pdfs(headless=False):
 
                 # Safety check
                 if policy_link.count() == 0:
-                    print("⚠️ Policy detail link not found, skipping row")
+                    print("Policy detail link not found, skipping row")
                     continue
 
                 # Extract policy number
@@ -156,7 +156,7 @@ def download_pdfs(headless=False):
 
                 if generate_report.count() == 0:
                     print(
-                        f"⚠️ Report not available for policy {policy_number}. Skipping."
+                        f"Report not available for policy {policy_number}. Skipping."
                     )
                     detail_page.close()
                     continue
@@ -193,7 +193,7 @@ def download_pdfs(headless=False):
                     "downloaded_at": datetime.utcnow().isoformat()
                 })
 
-                print(f"✅ Saved PDF for {policy_number}")
+                print(f"Saved PDF for {policy_number}")
 
                 # ---- Close detail tab ----
                 detail_page.close()
@@ -206,17 +206,17 @@ def download_pdfs(headless=False):
         )
 
             if page_link.count() == 0:
-                print("✅ No more pages found. Finished.")
+                print("No more pages found. Finished.")
                 break
 
-            print(f"➡️ Moving to page {next_page_number}")
+            print(f"Moving to page {next_page_number}")
             page_link.first.click()
             page.wait_for_selector("table tbody tr", timeout=30000)
 
             page_number += 1  
 
         browser.close()
-        print("✅ All downloads completed")
+        print("All downloads completed")
 
 
 if __name__ == "__main__":
