@@ -5,13 +5,16 @@ Navigates client records, opens each client in a new tab,
 generates a PDF report, downloads it, and updates a CSV file.
 """
 
+import logging
 import os
 import csv
 from datetime import datetime
 from playwright.sync_api import sync_playwright
-import re
-from src.pdf_extractor import extract_policy_data, append_to_csv1
+from src.pdf_extractor import extract_policy_data, extract_life_policy_data,get_all_pages_lines_from_pdf, LIFE_FIELDS , GENERAL_FIELDS
 from src.utils import sanitize_filename
+from src.csv_writer import append_to_csv_schema
+from dotenv import load_dotenv
+
 
 # ---- Configuration ----
 SESSION_FILE = "session.json"
@@ -21,9 +24,19 @@ OUTPUT_DIR = "output"
 PDF_DIR = os.path.join(OUTPUT_DIR, "pdfs")
 DATA_DIR = os.path.join(OUTPUT_DIR, "data")
 CSV_FILE = os.path.join(DATA_DIR, "clients_metadata.csv")
+PORTAL_URL = os.getenv("PORTAL_URL")
 
+logging.basicConfig(
+    level=logging.DEBUG,   # <-- THIS is required
+    format="%(asctime)s [%(levelname)s] %(message)s",
+)
+
+logging.getLogger("pdfminer").setLevel(logging.WARNING)
 os.makedirs(PDF_DIR, exist_ok=True)
 os.makedirs(DATA_DIR, exist_ok=True)
+
+LIFE_CSV = os.path.join(DATA_DIR, "life_policies.csv")
+GENERAL_CSV = os.path.join(DATA_DIR, "general_policies.csv")
 
 
 def append_to_csv(row: dict):
@@ -38,9 +51,20 @@ def append_to_csv(row: dict):
         writer.writerow(row)
 
 
+def is_session_expired(page): 
+
+    if page.locator("input[type='password']").count() > 0:
+        return True
+
+    # Also check frames just in case
+    for frame in page.frames:
+        if frame.locator("input[type='password']").count() > 0:
+            return True
+
+    return False
 
 
-def download_pdfs(headless=False):
+def download_pdfs(headless=False,retry=False):
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=headless, slow_mo=100)
         context = browser.new_context(
@@ -52,11 +76,41 @@ def download_pdfs(headless=False):
 
         # ---- Go to Policy Inquiry ----
         page.goto(POLICY_INQUIRY_URL, wait_until="domcontentloaded")
+        page.wait_for_load_state("domcontentloaded")
+        page.wait_for_timeout(2000)
 
-        page.wait_for_selector("text=Policy/New Business Inquiry", timeout=30000)
 
-        # Click Policy Inquiry
-        page.click("text=Policy/New Business Inquiry")
+        expired = False
+
+        content = page.content()
+
+        if "HTTP ERROR 500" in content or "This page isn’t working" in content:
+            expired = True
+
+        if expired:
+            
+            print("🔐 Session invalid. Please login.")
+
+            # Go to login page in SAME browser
+            page.goto(PORTAL_URL)
+
+            print("Complete login in browser window.")
+            input("Press ENTER after login + OTP complete...")
+
+            # Wait for dashboard indicator
+            page.wait_for_selector("text=Policy/New Business Inquiry", timeout=60000)
+
+            # Save session inside same context
+            context.storage_state(path=SESSION_FILE)
+
+            print("✅ Session refreshed.")
+
+            # ✅ IMPORTANT: Now go back to policy inquiry page
+            page.goto(POLICY_INQUIRY_URL)
+            page.wait_for_load_state("domcontentloaded")
+            page.wait_for_timeout(2000)
+                
+    
 
         print("Frames on page:")
         for f in page.frames:
@@ -64,12 +118,9 @@ def download_pdfs(headless=False):
 
 
 
-        page.wait_for_load_state("networkidle")
-
         # Wait for Search button to exist
-        search_button = page.locator("button.btn.btn-primary[type='submit']")
+        page.wait_for_selector("button.btn.btn-primary[type='submit']", timeout=30000)
 
-        # Wait until Angular enables it
         page.wait_for_function(
             """() => {
                 const btn = document.querySelector("button.btn.btn-primary[type='submit']");
@@ -77,10 +128,11 @@ def download_pdfs(headless=False):
             }""",
             timeout=30000
         )
-                # Click Search
-        search_button.click()
 
-        # Wait for results table
+        # ✅ Re-query fresh locator at click time
+        page.locator("button.btn.btn-primary[type='submit']").click(force=True)
+
+                # Wait for results table
         page.wait_for_selector("table tbody tr", timeout=30000)
 
         rows = page.locator("table tbody tr")
@@ -182,9 +234,22 @@ def download_pdfs(headless=False):
 
                 download = download_info.value
                 download.save_as(pdf_path)
-
-                data = extract_policy_data(pdf_path)
-                append_to_csv1(data, "output/data/policies.csv")
+                pages_lines = get_all_pages_lines_from_pdf(pdf_path)
+                print(pages_lines)
+                
+                try:
+                    if "Coverage" in sum(pages_lines, []):
+                        data = extract_life_policy_data(pages_lines)
+                        print(data)
+                        append_to_csv_schema(LIFE_CSV, data, LIFE_FIELDS)
+                        print(f"Extracted LIFE policy data for {policy_number}")
+                    else:
+                        data = extract_policy_data(pages_lines)
+                        print(data)
+                        append_to_csv_schema(GENERAL_CSV, data,GENERAL_FIELDS)
+                        print(f"Extracted GENERAL policy data for {policy_number}")
+                except Exception as e:
+                    print(f"Error extracting data from {policy_number}: {e}")
 
                 # ---- Update CSV ----
                 append_to_csv({
@@ -220,4 +285,8 @@ def download_pdfs(headless=False):
 
 
 if __name__ == "__main__":
-    download_pdfs(headless=False)
+    success = download_pdfs(headless=False)
+
+    if success is False:
+        # Session was refreshed → run again cleanly
+        download_pdfs(headless=False)
