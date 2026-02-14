@@ -358,10 +358,15 @@ def extract_life_policy_data(pages_lines):
 
     # ---------- POLICY NUMBER & PRODUCT ----------
     for i, line in enumerate(all_lines):
-        m = re.fullmatch(r"\((\d{6,})\)", line)
+        m = re.search(r"\((\d{6,})\)", line)
         if m:
-            data["policy_number"] = m.group(1)
-            if i > 0:
+            policy_number = m.group(1)
+            data["policy_number"] = policy_number
+            if line.strip() != f"({policy_number})":
+                data["product_name"] = line.replace(f"({policy_number})", "").strip()
+
+        # ✅ Case 2: number alone on next line (8005 series)
+            elif i > 0:
                 data["product_name"] = all_lines[i - 1]
             break
 
