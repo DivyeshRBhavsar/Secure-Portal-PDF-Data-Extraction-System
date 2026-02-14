@@ -12,4 +12,3 @@
 - Download PDF reports
 - Extract and clean tabular data
 - Deliver data in CSV format
-- (Bonus) Provide an interactive dashboard
