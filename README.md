@@ -1,6 +1,11 @@
 # SECURE PORTAL PDF DATA EXTRACTION SYSTEM
 
 
+[![CI - Secure PDF Data Extraction](https://github.com/DivyeshRBhavsar/Secure-Portal-PDF-Data-Extraction-System/actions/workflows/CI.yml/badge.svg)](https://github.com/DivyeshRBhavsar/Secure-Portal-PDF-Data-Extraction-System/actions/workflows/CI.yml)
+
+
+> ⚠️ All CSV examples use anonymized/sample data for demonstration purposes.
+
 ## Problem Statement
     The client needs a dashboard to enable analysis of data extracted from PDF reports hosted within a secure system portal. And right now, all data needs to be manually downloaded and processed, which is time‑consuming and prone to human error. 
    
@@ -10,5 +15,5 @@
 ## Objectives
 - Automate login to a secure web portal
 - Download PDF reports
-- Extract and clean tabular data
+- Extract and clean tabular data 
 - Deliver data in CSV format
