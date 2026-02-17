@@ -11,12 +11,19 @@ def run_downloader(force_refresh=False):
     if force_refresh:
         args.append("--force")
 
+    start_time = datetime.now()
+
     result = subprocess.run(
         args,
         cwd=PROJECT_ROOT,
         capture_output=True,
         text=True
     )
+
+    end_time = datetime.now()
+    duration = (end_time - start_time).seconds
+
+    return result, duration
 
 
 # ---------- Paths ----------
@@ -68,33 +75,33 @@ col1, col2 = st.columns(2)
 
 with col1:
     if st.button("🔄 Refresh New Policies"):
-        run_downloader(force_refresh=False)
+        result, duration=run_downloader(force_refresh=False)
+
+        if result.returncode == 0:
+            st.success(f"✅ Data refresh completed in {duration} seconds.")
+        else:
+            if "Session expired" in result.stderr:
+                st.warning("⚠️ Session expired. Please click 'Re-Login to Portal'.")
+            else:
+                st.error("❌ Data refresh failed.")
+                st.text(result.stderr)
+
 
 with col2:
     if st.button("♻️ Re-Check All Policies"):
         run_downloader(force_refresh=True)
 
-    start_time = datetime.now()
-
-    result = subprocess.run(
-        [sys.executable, "-m", "src.downloader"],
-        cwd=PROJECT_ROOT,
-        capture_output=True,
-        text=True
-    )
-
-    end_time = datetime.now()
-    duration = (end_time - start_time).seconds
-
-    if result.returncode == 0:
-        st.success(f"✅ Data refresh completed in {duration} seconds.")
-    else:
-        if "Session expired" in result.stderr:
-            st.warning("⚠️ Session expired. Please click 'Re-Login to Portal'.")
+        if result.returncode == 0:
+            st.success(f"✅ Data refresh completed in {duration} seconds.")
         else:
-            st.error("❌ Data refresh failed.")
-            st.text(result.stderr)
+            if "Session expired" in result.stderr:
+                st.warning("⚠️ Session expired. Please click 'Re-Login to Portal'.")
+            else:
+                st.error("❌ Data refresh failed.")
+                st.text(result.stderr)
 
+
+    
 st.divider()
 
 st.caption(
