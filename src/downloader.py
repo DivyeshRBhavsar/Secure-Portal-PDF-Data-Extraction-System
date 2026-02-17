@@ -8,6 +8,7 @@ generates a PDF report, downloads it, and updates a CSV file.
 import logging
 import os
 import csv
+import sys
 from datetime import datetime
 from playwright.sync_api import sync_playwright
 from src.pdf_extractor import extract_policy_data, extract_life_policy_data,get_all_pages_lines_from_pdf, LIFE_FIELDS , GENERAL_FIELDS
@@ -64,7 +65,7 @@ def is_session_expired(page):
     return False
 
 
-def download_pdfs(headless=False,retry=False):
+def download_pdfs(headless=False,force_refresh = False):
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=headless, slow_mo=100)
         context = browser.new_context(
@@ -183,7 +184,7 @@ def download_pdfs(headless=False,retry=False):
                 pdf_path = os.path.join(PDF_DIR, pdf_filename)
 
                 # ---- Skip existing PDFs ----
-                if os.path.exists(pdf_path):
+                if os.path.exists(pdf_path) and not force_refresh:
                     print(f"Skipping existing file: {pdf_filename}")
                     continue
 
@@ -285,8 +286,17 @@ def download_pdfs(headless=False,retry=False):
 
 
 if __name__ == "__main__":
-    success = download_pdfs(headless=False)
 
+    force = "--force" in sys.argv
+
+    success = download_pdfs(
+        headless=False,
+        force_refresh=force
+    )
+
+    # ✅ If session was refreshed, run again once
     if success is False:
-        # Session was refreshed → run again cleanly
-        download_pdfs(headless=False)
+        download_pdfs(
+            headless=False,
+            force_refresh=force
+        )

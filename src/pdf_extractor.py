@@ -221,6 +221,14 @@ def extract_policy_data(pages_lines):
         if match:
             data["policy_number"] = match.group(1)
             break
+        match = re.search(r"policy\s*number\s*(\d{6,})", line, re.I)
+        if match:
+            data["policy_number"] = match.group(1)
+            break
+        match = re.fullmatch(r"\d{6,}", line.strip())
+        if match:
+            data["policy_number"] = match.group(0)
+            break
 
     # ✅ Contract Type
     for i, line in enumerate(all_lines):
