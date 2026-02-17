@@ -1,0 +1,4 @@
+policy_number,contract_type,total_deposits,total_withdrawals,net_deposits,market_value,death_benefit_guarantee,maturity_guarantee,maturity_date,owner_name,address,phone,email,sex,date_of_birth
+000000101,RRSP,10000.00,0.00,10000.00,10525.50,375.00,375.00,September 27, 2045,Emily Carter,"123 Maple Street Toronto, Ontario M1M1M1 Canada",4165551234,emily.carter@email.com,Female,July 7, 1989
+000000102,FHSA,500.00,0.00,500.00,506.50,225.00,225.00,October 5, 2103,David Lee,"45 King Street Waterloo, Ontario N2L3G1 Canada",5195559876,david.lee@email.com,Male,October 5, 1998
+000000103,TFSA,25000.00,2000.00,23000.00,24050.75,500.00,500.00,January 1, 2050,Sarah Patel,"78 Queen Avenue Brampton, Ontario L6R2J2 Canada",6475554321,sarah.patel@email.com,Female,March 12, 1992
