@@ -52,20 +52,10 @@ def append_to_csv(row: dict):
         writer.writerow(row)
 
 
-def is_session_expired(page): 
-
-    if page.locator("input[type='password']").count() > 0:
-        return True
-
-    # Also check frames just in case
-    for frame in page.frames:
-        if frame.locator("input[type='password']").count() > 0:
-            return True
-
-    return False
 
 
-def download_pdfs(headless=False,force_refresh = False):
+
+def download_pdfs(headless=True,force_refresh = False):
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=headless, slow_mo=100)
         context = browser.new_context(
@@ -290,13 +280,13 @@ if __name__ == "__main__":
     force = "--force" in sys.argv
 
     success = download_pdfs(
-        headless=False,
+        headless=True,
         force_refresh=force
     )
 
     # ✅ If session was refreshed, run again once
     if success is False:
         download_pdfs(
-            headless=False,
+            headless=True,
             force_refresh=force
         )
