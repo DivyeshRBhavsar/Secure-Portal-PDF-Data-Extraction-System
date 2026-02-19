@@ -27,6 +27,7 @@ DATA_DIR = os.path.join(OUTPUT_DIR, "data")
 CSV_FILE = os.path.join(DATA_DIR, "clients_metadata.csv")
 PORTAL_URL = os.getenv("PORTAL_URL")
 
+
 logging.basicConfig(
     level=logging.DEBUG,   # <-- THIS is required
     format="%(asctime)s [%(levelname)s] %(message)s",
