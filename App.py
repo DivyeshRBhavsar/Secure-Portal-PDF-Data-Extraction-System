@@ -89,7 +89,7 @@ with col1:
 
 with col2:
     if st.button("♻️ Re-Check All Policies"):
-        run_downloader(force_refresh=True)
+        result, duration = run_downloader(force_refresh=True)
 
         if result.returncode == 0:
             st.success(f"✅ Data refresh completed in {duration} seconds.")
