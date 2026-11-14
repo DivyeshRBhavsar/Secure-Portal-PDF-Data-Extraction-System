@@ -1,10 +1,22 @@
 # Python
 __pycache__/
 *.pyc
+.pytest_cache/
 
 # Virtual environments
 .venv/
+
+# Secrets
 .env
+secrets.json
+session.json
+
+# Output files (real client PDFs and CSVs: never commit)
+output/
+
+# PyInstaller build output
+build/
+dist/
 
 # Jupyter
 .ipynb_checkpoints/
@@ -12,18 +24,10 @@ __pycache__/
 # Playwright / Selenium
 playwright/.cache/
 
-# Secrets
-.env
-secrets.json
-session.json
+# Local patch and archive files
+*.patch
+*.zip
 
 # OS
 .DS_Store
-
-#output files 
-output/# PyInstaller build output
-build/
-dist/
-
-# Local patch files
-*.patch
+Thumbs.db

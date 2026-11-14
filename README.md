@@ -101,6 +101,7 @@ This project replaces that manual work with an automated pipeline. It:
 ├── sample_output/             # Example CSV output (synthetic data)
 ├── .github/workflows/CI.yml   # GitHub Actions: runs pytest on every push / PR
 ├── start_app.bat              # One-click Windows launcher
+├── App.spec                   # PyInstaller recipe (experimental Windows .exe build)
 ├── .env.example               # Template for the portal URLs
 ├── Dockerfile
 └── requirements.txt
@@ -133,6 +134,8 @@ pip install -r requirements.txt
 playwright install chromium
 streamlit run App.py
 ```
+
+> `App.spec` is a PyInstaller recipe for an experimental standalone Windows `.exe`. The recommended way to run the app is `start_app.bat` or `streamlit run App.py`. Build output (`build/`, `dist/`) is git-ignored.
 
 ### 3. Use it
 1. Click **🔑 Login to Portal**. A browser window opens. Sign in with your username, password and OTP, then press **Enter** in the terminal to save the session.
