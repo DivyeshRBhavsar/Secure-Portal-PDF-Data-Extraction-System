@@ -21,4 +21,9 @@ session.json
 .DS_Store
 
 #output files 
-output/
+output/# PyInstaller build output
+build/
+dist/
+
+# Local patch files
+*.patch

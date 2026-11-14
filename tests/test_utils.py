@@ -1,7 +1,7 @@
 from src.utils import sanitize_filename
 
 def test_sanitize_filename():
-    name = "KUMARI, PRITI"
+    name = "DOE, JANE"
     result = sanitize_filename(name)
 
-    assert result == "KUMARI_PRITI"
+    assert result == "DOE_JANE"

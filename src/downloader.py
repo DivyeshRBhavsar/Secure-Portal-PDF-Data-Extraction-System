@@ -16,16 +16,28 @@ from src.utils import sanitize_filename
 from src.csv_writer import append_to_csv_schema
 from dotenv import load_dotenv
 
+# Load environment variables from .env (must run before os.getenv below)
+load_dotenv()
 
 # ---- Configuration ----
 SESSION_FILE = "session.json"
-POLICY_INQUIRY_URL = "https://advisor.equitable.ca/advisor/en/tools/policy-inquiry/"
+POLICY_INQUIRY_URL = os.getenv("POLICY_INQUIRY_URL")
 POLICY_COLUMN_INDEX = 3
 OUTPUT_DIR = "output"
 PDF_DIR = os.path.join(OUTPUT_DIR, "pdfs")
 DATA_DIR = os.path.join(OUTPUT_DIR, "data")
 CSV_FILE = os.path.join(DATA_DIR, "clients_metadata.csv")
 PORTAL_URL = os.getenv("PORTAL_URL")
+
+# Exit code used when the saved session is missing or expired.
+# App.py looks for the "Session expired" message to show a re-login prompt.
+SESSION_EXPIRED_EXIT_CODE = 2
+
+
+def session_expired_exit():
+    """Report an expired session to App.py and stop."""
+    print("Session expired. Please log in to the portal again.", file=sys.stderr)
+    sys.exit(SESSION_EXPIRED_EXIT_CODE)
 
 
 logging.basicConfig(
@@ -56,7 +68,25 @@ def append_to_csv(row: dict):
 
 
 
-def download_pdfs(headless=True,force_refresh = False):
+def download_pdfs(headless=True, force_refresh=False):
+    """
+    Downloads every policy report and extracts its data to CSV.
+
+    Args:
+        headless (bool): Run the browser without a window.
+        force_refresh (bool): Re-download policies whose PDF already exists.
+
+    Returns:
+        True when all pages have been processed.
+    """
+    if not POLICY_INQUIRY_URL:
+        print("❌ POLICY_INQUIRY_URL is not set. Add it to your .env file.", file=sys.stderr)
+        sys.exit(1)
+
+    # No saved session yet → the user has to log in first
+    if not os.path.exists(SESSION_FILE):
+        session_expired_exit()
+
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=headless, slow_mo=100)
         context = browser.new_context(
@@ -79,8 +109,14 @@ def download_pdfs(headless=True,force_refresh = False):
         if "HTTP ERROR 500" in content or "This page isn’t working" in content:
             expired = True
 
+        if expired and headless:
+            # Can't log in without a visible browser: tell App.py and stop
+            # instead of waiting forever on input().
+            browser.close()
+            session_expired_exit()
+
         if expired:
-            
+
             print("🔐 Session invalid. Please login.")
 
             # Go to login page in SAME browser
@@ -274,20 +310,16 @@ def download_pdfs(headless=True,force_refresh = False):
 
         browser.close()
         print("All downloads completed")
+        return True
 
 
 if __name__ == "__main__":
 
     force = "--force" in sys.argv
 
-    success = download_pdfs(
+    # An expired session exits with SESSION_EXPIRED_EXIT_CODE inside
+    # download_pdfs, so App.py can prompt the user to log in again.
+    download_pdfs(
         headless=True,
         force_refresh=force
     )
-
-    # ✅ If session was refreshed, run again once
-    if success is False:
-        download_pdfs(
-            headless=True,
-            force_refresh=force
-        )

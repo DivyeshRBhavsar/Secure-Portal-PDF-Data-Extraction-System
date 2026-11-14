@@ -22,11 +22,11 @@ def create_mock_life_policy_pdf(path):
     c.drawString(40, y, "Coverage")
     y -= 20
 
-    c.drawString(40, y, "Face Amount \$250,000")
+    c.drawString(40, y, "Face Amount $250,000")
     y -= 15
-    c.drawString(40, y, "Death Benefit \$250,000")
+    c.drawString(40, y, "Death Benefit $250,000")
     y -= 15
-    c.drawString(40, y, "Accidental Death Benefit \$500,000")
+    c.drawString(40, y, "Accidental Death Benefit $500,000")
     y -= 15
     c.drawString(40, y, "Tax Indicator Taxable")
     y -= 15
@@ -47,14 +47,14 @@ def create_mock_life_policy_pdf(path):
     y -= 15
     c.drawString(40, y, "Next Payment Date 2026-01-01")
     y -= 15
-    c.drawString(40, y, "Amount Billed \$150.00")
+    c.drawString(40, y, "Amount Billed $150.00")
     y -= 30
 
     # ----- ADDITIONAL INFO -----
     c.drawString(40, y, "Additional Advisor Information")
     y -= 20
 
-    c.drawString(40, y, "Minimum Premium \$100.00")
+    c.drawString(40, y, "Minimum Premium $100.00")
     y -= 15
     c.drawString(40, y, "Policy Paid to Date 2025-12-01")
     y -= 30
